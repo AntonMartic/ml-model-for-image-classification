@@ -1,1 +1,1 @@
-# ML-model-for-cat---dog-classification
+# ML-model-for-cat-and-dog-classification
