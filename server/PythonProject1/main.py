@@ -13,7 +13,7 @@ print(x)
 
 # Create image directories
 cat_dir ="training-data/PetImages/Cat"
-cat_dog ="training-data/PetImages/Dog"
+dog_dir ="training-data/PetImages/Dog"
 
 # test resize, grayscale and hog features for a single image
 img_path = "training-data/PetImages/Cat/1.jpg"
