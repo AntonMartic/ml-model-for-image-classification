@@ -50,6 +50,8 @@ conda install anaconda::scikit-image -y
 
 ## Flask & Next JS
 
+Behöver ha två komando fönster öppna (helst i VS CODE)
+
 ### Next JS
 
 > ```
