@@ -15,7 +15,7 @@ print(x)
 cat_dir ="training-data/PetImages/Cat"
 cat_dog ="training-data/PetImages/Dog"
 
-# test resize and grayscale for a single image
+# test resize, grayscale and hog features for a single image
 img_path = "training-data/PetImages/Cat/1.jpg"
 img = imread(img_path)  # Load the image
 img_resized = resize(img, (128, 128))  # Resize
