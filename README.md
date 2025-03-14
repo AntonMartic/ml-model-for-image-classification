@@ -59,9 +59,16 @@ conda install anaconda::scikit-image -y
 
 ### Python
 
+Se till så att konsolen står i server mappen kör sedan följande
+
 #### **Mac**
 
 > ```console
+> // vet inte vad kommandona är för mac
+> py -m venv venv
+> py -m pip install flask
+> py -m pip install flask-cors
+>
 > source venv/bin/activate
 > py server.py
 >
@@ -72,10 +79,11 @@ conda install anaconda::scikit-image -y
 #### **Windows**
 
 > ```console
+> py -m venv venv
 > py -m pip install flask
 > py -m pip install flask-cors
 >
-> // Halv risky att köra (tror jag)
+> // Kan behöva köras men osäkert, så skippa helst
 > Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 >
 > .\venv\Scripts\Activate
