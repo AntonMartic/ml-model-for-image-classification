@@ -9,6 +9,9 @@
 
 <br/>
 
+# Jobba med projektet
+All python ligger under api/*. För att skapa nya python filer eller ändra existerande behöver man ändra filer där.
+
 ## Introduction
 
 This is a hybrid Next.js + Python app that uses Next.js as the frontend and Flask as the API backend. One great use case of this is to write Next.js apps that use Python AI libraries on the backend.
