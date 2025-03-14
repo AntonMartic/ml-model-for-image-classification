@@ -1,6 +1,8 @@
+
 import numpy as np
 import matplotlib.pyplot as plt
-from skimage.feature import hog
+#import matplotlib.image as mpimg
+#from skimage.feature import hog
 from skimage.color import rgb2gray
 from skimage.io import imread
 from skimage.transform import resize
@@ -18,6 +20,7 @@ img = imread(img_path)  # Load the image
 img_resized = resize(img, (128, 128))  # Resize
 img_gray = rgb2gray(img_resized)  # Convert to grayscale
 
-plt.imshow(img_path)
+plt.imshow(img)
 plt.imshow(img_resized)
 plt.imshow(img_gray)
+plt.show()
