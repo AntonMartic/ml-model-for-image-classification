@@ -72,6 +72,9 @@ conda install anaconda::scikit-image -y
 #### **Windows**
 
 > ```console
+> py -m pip install flask
+> py -m pip install flask-cors
+>
 > // Halv risky att köra (tror jag)
 > Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 >
