@@ -2,6 +2,8 @@ import os
 import pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score, classification_report
 
 # Folder where HOG feature files are saved
 hog_folder = "hog_features"  # Change this if needed
@@ -28,7 +30,7 @@ print(f"Combined Feature matrix shape: {X_combined.shape}")  # (num_samples, num
 print(f"Combined Labels shape: {y_combined.shape}")          # (num_samples,)
 
 
-"""
+
 
 # Split dataset into 80% training and 20% testing
 X_train, X_test, y_train, y_test = train_test_split(X_combined, y_combined, test_size=0.2, random_state=42, stratify=y_combined)
@@ -36,5 +38,23 @@ X_train, X_test, y_train, y_test = train_test_split(X_combined, y_combined, test
 # Print dataset shapes
 print(f"Training data shape: {X_train.shape}, Training labels shape: {y_train.shape}")
 print(f"Testing data shape: {X_test.shape}, Testing labels shape: {y_test.shape}")
+
+"""
+
+# Initialize SVM classifier
+svm_model = SVC(kernel='linear', random_state=42)
+
+# Train the model on the training data
+svm_model.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = svm_model.predict(X_test)
+
+# Evaluate performance
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Test Accuracy: {accuracy:.4f}")
+
+# Print detailed classification report
+print("Classification Report:\n", classification_report(y_test, y_pred))
 
 """
