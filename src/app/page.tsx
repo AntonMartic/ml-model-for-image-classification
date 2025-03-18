@@ -1,8 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Image } from "lucide-react";
 
 export default function page() {
   const [message, setMessage] = useState("Loading");
@@ -15,15 +14,17 @@ export default function page() {
 
   return (
     <>
-      <div className="bg-gray-50 w-dvw h-dvh flex justify-center items-center flex-col gap-8">
-        <h1 className="text-black font-extrabold text-7xl">Dog and cat classifier</h1>
-        <form className="w-8/12 h-1/4 bg-gray-200 rounded-3xl flex justify-center items-center">
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="picture">Picture</Label>
-            <Input id="picture" type="file" accept="image/*" />
-          </div>
+      <div className="flex flex-col items-center justify-center gap-8 bg-gray-50 w-dvw h-dvh">
+        <h1 className="font-extrabold text-black text-7xl">Dog and cat classifier</h1>
+        <form className="flex items-center justify-center w-8/12 bg-blue-100 h-1/4 rounded-3xl">
+          <label className="flex flex-col items-center justify-center w-full h-full gap-2 text-xl font-medium text-center text-blue-500 cursor-pointer"
+            htmlFor="file-upload">
+            <Image className="w-14 h-14" />
+            Ladda upp en bild
+          </label>
+          <input type="file" id="file-upload" className="hidden appearance-none" />
         </form>
-        <p className="text-black text-4xl font-bold">{message}</p>
+        <p className="text-4xl font-bold text-black">{message}</p>
       </div>
     </>
   )
