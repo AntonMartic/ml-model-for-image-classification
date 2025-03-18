@@ -46,6 +46,7 @@ To install the required libraries, run the following commands in your terminal:
 conda install numpy -y
 conda install anaconda::matplotlib -y
 conda install anaconda::scikit-image -y
+conda install anaconda::scikit-learn -y
 ```
 
 ## Flask & Next JS
