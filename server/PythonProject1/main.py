@@ -7,6 +7,7 @@ from skimage.color import rgb2gray
 from skimage.io import imread
 from skimage.transform import resize
 from skimage.util import img_as_float
+import pickle
 
 #### TEST ####
 # test resize, grayscale and hog features for a single image
@@ -17,7 +18,7 @@ img_resized_test = resize(img_test, (128, 128), anti_aliasing=True)  # Resize
 img_gray_test = img_as_float(rgb2gray(img_resized_test))  # Convert to grayscale & normalize (ensuring pixel values are between 0 and 1)
 
 # Extract HOG features and visualize
-hog_features_test, hog_image_test = hog(img_gray_test, pixels_per_cell=(4, 4),
+hog_features_test, hog_image_test = hog(img_gray_test, pixels_per_cell=(8, 8),
                               cells_per_block=(2, 2), orientations=9,
                               visualize=True)
 
@@ -39,7 +40,7 @@ ax[2].axis("off")
 plt.show()
 
 
-"""
+
 
 #### HOG feature extraction for all cats and dogs ####
 
@@ -47,16 +48,22 @@ plt.show()
 cat_dir ="training-data/PetImages/Cat"
 dog_dir ="training-data/PetImages/Dog"
 
+# Ensure the HOG feature directory exists
+hog_dir = "hog_features"
+os.makedirs(hog_dir, exist_ok=True)
 
 # Image settings
 img_size = (128, 128)  # Resize images to a fixed size
+batch_size = 1000  # Number of images per file
 
 # Lists to store features and labels
 X = []
 y = []
+file_index = 1  # File counter
 
 # Function to process images and extract HOG features
 def process_images(directory, label):
+    global X, y, file_index  # Use global to update lists across function calls
     for filename in os.listdir(directory):
         img_path = os.path.join(directory, filename)
 
@@ -78,12 +85,33 @@ def process_images(directory, label):
             X.append(features)
             y.append(label)
 
+            # Save in batches of batch_size
+            if len(X) >= batch_size:
+                save_features(X, y, file_index)
+                file_index += 1
+                X, y = [], []  # Reset lists
+
         except Exception as e:
             print(f"Skipping {img_path} due to error: {e}")
+
+# Function to save features to a file
+def save_features(X, y, index):
+    filename = os.path.join(hog_dir, f"hog_features_part_{index}.pkl")
+    with open(filename, "wb") as f:
+        pickle.dump((np.array(X), np.array(y)), f)
+    print(f"Saved {len(X)} samples to {filename}")
 
 # Process images
 process_images(cat_dir, 0)  # Cats → Label 0
 process_images(dog_dir, 1)  # Dogs → Label 1
+
+# Save remaining data if any
+if X:
+    save_features(X, y, file_index)
+
+print("All HOG features and labels saved in multiple files.")
+
+"""
 
 # Convert to NumPy arrays
 X = np.array(X)
@@ -92,5 +120,11 @@ y = np.array(y)
 # Print dataset shape
 print(f"Feature matrix shape: {X.shape}")  # Should be (num_samples, feature_length)
 print(f"Labels shape: {y.shape}")          # Should be (num_samples,)
+
+# Save to pickle file at the end
+with open("hog_features.pkl", "wb") as f:
+    pickle.dump((X, y), f)
+
+print("HOG features and labels saved to hog_features.pkl")
 
 """
