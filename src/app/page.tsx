@@ -1,30 +1,144 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { ChangeEvent, DragEvent, FormEvent, useEffect, useState } from "react"
+import { Image } from "lucide-react";
 
 export default function page() {
+  const [file, setFile] = useState<File | null>(null);
+  const [result, setResult] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [message, setMessage] = useState("Loading");
 
   useEffect(() => {
     fetch("http://localhost:8080/api/home")
-      .then((response) => response.json()
-      ).then((data) => setMessage(data.message));
-  }, [])
+      .then((response) => response.json())
+      .then((data) => setMessage(data.message));
+  }, []);
+
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) {
+      setError("Någonting gick fel");
+      return;
+    }
+
+    processFile(e.target.files[0]);
+  };
+
+  const handleDrop = (e: DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0]);
+      setIsDragging(false);
+    }
+  };
+
+  const processFile = (selectedFile: File) => {
+    setFile(selectedFile);
+    setResult(null);
+    setError(null);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === "string") {
+        setPreview(reader.result);
+      }
+    };
+    reader.readAsDataURL(selectedFile);
+  };
+
+  const handleUpload = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!file) {
+      setError("Vänligen välj en fil");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("http://localhost:8080/classify-image", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setResult(data.result);
+        setError(null);
+      } else {
+        setResult(null);
+        setError(data.error || "Ett fel uppstod");
+      }
+    } catch (error) {
+      setError("Fel vid uppladdning av fil");
+    }
+  };
+
 
   return (
     <>
-      <div className="bg-gray-50 w-dvw h-dvh flex justify-center items-center flex-col gap-8">
-        <h1 className="text-black font-extrabold text-7xl">Dog and cat classifier</h1>
-        <form className="w-8/12 h-1/4 bg-gray-200 rounded-3xl flex justify-center items-center">
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="picture">Picture</Label>
-            <Input id="picture" type="file" accept="image/*" />
-          </div>
-        </form>
-        <p className="text-black text-4xl font-bold">{message}</p>
+      <div className="flex flex-col items-center justify-center w-full gap-4 h-svh bg-gray-50">
+        <div className="flex flex-col gap-4 justify-center items-center">
+          <h1 className="font-extrabold text-black text-7xl">Dog and Cat Classifier</h1>
+          <p className="text-4xl font-bold text-black">{message}</p>
+        </div>
+
+        {result ? (
+          <p>Resultat: {result}</p>
+        ) : (
+          <form className="flex flex-col items-center justify-center w-full gap-6 h-6/12">
+            <label
+              className={`flex flex-col items-center justify-center w-6/12 gap-2 text-xl font-medium text-center text-blue-400 transition duration-300 ease-in-out bg-blue-100 h-10/12 rounded-3xl 
+            ${preview ? "" : "hover:bg-blue-200 cursor-pointer"}
+            ${isDragging ? "bg-blue-200" : ""}`}
+              htmlFor="file-upload"
+              onDragEnter={() => setIsDragging(true)}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              onDragOver={(e) => e.preventDefault()}
+            >
+              {preview ? (
+                <>
+                  <img src={preview} alt="Preview" className="rounded-md h-9/12 opacity-80" />
+                  <button
+                    type="button"
+                    className="px-8 py-1 text-sm font-medium transition duration-300 ease-in-out bg-red-500 cursor-pointer rounded-xl text-gray-50 hover:bg-red-700"
+                    onClick={(e) => {
+                      setFile(null);
+                      setPreview(null);
+                      setResult(null);
+                    }}
+                  >
+                    Välj en annan bild
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Image className="text-blue-400 w-14 h-14" />
+                  Klicka eller dra in en bild för att ladda upp
+                </>
+              )}
+            </label>
+
+            {!preview && (
+              <input type="file" id="file-upload" className="hidden" accept="image/png, image/jpeg" onChange={handleFileChange} />
+            )}
+
+            <button
+              className="py-4 text-xl transition duration-300 ease-in-out bg-blue-400 cursor-pointer px-14 rounded-xl text-gray-50 hover:bg-blue-500"
+              type="submit"
+              onClick={handleUpload}
+            >
+              Ladda upp
+            </button>
+          </form>
+        )}
+        {error && <p className="text-red-500">{error}</p>}
       </div>
     </>
-  )
+  );
 }
