@@ -91,6 +91,8 @@ Se till så att konsolen står i server mappen kör sedan följande
 > .\venv\Scripts\Activate
 > py server.py
 >
+> npm run dev
+>
 > // Avsluta
 > deactivate
 > ```
