@@ -1,105 +1,64 @@
 # Image Classification: Cats vs Dogs
-
-This project is aimed at classifying images of cats and dogs using machine learning. The goal is to predict whether a new uploaded image is a cat or a dog.
-
-## Table of Contents
-
-- [Project Overview](#project-overview)
-- [Tools and Libraries](#tools-and-libraries)
-- [Dataset](#dataset)
-- [Installation](#installation)
-- [Dependencies](#dependencies)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Contributors](https://img.shields.io/badge/contributors-3-orange)
 
 ## Project Overview
 
-The project involves using machine learning techniques to classify images of cats and dogs. We use the Histogram of Oriented Gradients (HOG) feature descriptor along with a classifier to make predictions.
+This project classifies images of cats and dogs using machine learning. It uses a trained model to predict whether an uploaded image contains a cat or a dog.
 
-## Tools and Libraries
+## Features
 
-- **Python**: The primary programming language used.
-- **skimage**: For image processing tasks.
-- **HOG**: For feature extraction.
-
-## Dataset
-
-The dataset used for this project is the [Cats-vs-Dogs Dataset from Kaggle](https://www.kaggle.com/datasets/bhavikjikadara/dog-and-catclassification-dataset).
+- Upload an image to classify it as a cat or dog 🐱🐶
+- Uses a pre-trained machine learning model for accurate predictions
+- Built with **Python (Flask)** and **Next.js** for backend and frontend
+- Provides instant results after image upload
 
 ## Installation
 
-1. **Install Anaconda Environment**:
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/AntonMartic/ml-model-for-image-classification.git
+   ```
 
-   - Download and install Miniconda from [here](https://www.anaconda.com/docs/getting-started/miniconda/install).
+2. **Navigate to the project directory**:
+   ```bash
+   cd ml-model-for-image-classification
+   ```
 
-2. **Set Up PyCharm Interpreter**:
-   - Open PyCharm.
-   - Press on the interpreter in the bottom right corner.
-   - Select `Add New Interpreter` -> `Local Interpreter` -> `Conda`.
+3. **Set up a virtual environment**:
+   ```bash
+   python -m venv env
+   source env/bin/activate  # Windows: env\Scripts\activate
+   ```
 
-## Dependencies
+4. **Install Python dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-To install the required libraries, run the following commands in your terminal:
+5. **Install frontend dependencies**:
+   ```bash
+   npm install
+   ```
 
-```bash
-conda install numpy -y
-conda install anaconda::matplotlib -y
-conda install anaconda::scikit-image -y
-```
+## Usage
 
-## Flask & Next JS
+1. **Run the Flask backend**:
+   ```bash
+   cd server
+   flask run
+   ```
+   The backend will be available at http://127.0.0.1:8080
 
-Behöver ha två komando fönster öppna (helst i VS CODE)
+2. **Start the Next.js frontend**:
+   ```bash
+   npm run dev
+   ```
+   The frontend will be available at http://localhost:3000
 
-### Next JS
+3. **Upload an image and classify it!**
 
-> ```
-> npm install
-> npm run dev
-> ```
+## License
 
-### Python
-
-Se till så att konsolen står i server mappen kör sedan följande
-
-#### **Mac**
-
-> ```console
-> // vet inte vad kommandona är för mac
-> py -m venv venv
-> py -m pip install flask
-> py -m pip install flask-cors
->
-> source venv/bin/activate
-> py server.py
->
-> // Avsluta
-> deactivate
-> ```
-
-#### **Windows**
-
-> ```console
-> py -m venv venv
-> py -m pip install flask
-> py -m pip install flask-cors
->
-> // Kan behöva köras men osäkert, så skippa helst
-> Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
->
-> .\venv\Scripts\Activate
-> py server.py
->
-> npm run dev
->
-> // Avsluta
-> deactivate
-> ```
-
-#### Kommer hostas på den första fria porten _(http://localhost:3000 som standard)_ medan api requesten kommer kunna göras till _http://localhost:8080/api/home_ just nu
-
-### Videos
-
-> - [Intro video](https://www.youtube.com/watch?v=OwxxCibSFKk&t=548s&ab_channel=ArpanNeupane)
-> - [Hosting video](https://www.youtube.com/watch?v=LaMVBDbUtMA)
+This project is licensed under the **MIT License**.  
+See the [LICENSE](LICENSE) file for more details.
