@@ -7,7 +7,6 @@ from skimage.feature import hog
 import matplotlib.pyplot as plt
 
 
-
 # Function to preprocess and extract HOG features from a single image
 def preprocess_single_image(image_path):
     img = imread(image_path)
@@ -28,7 +27,9 @@ with open("svm_model.pkl", "rb") as model_file:
 print("SVM model loaded successfully!")
 
 # Choose a test image from your dataset (Modify this path to test different images)
-image_path = "training-data/PetImages/Cat/5.jpg"  # Example image
+image_path = "test-images/marcus.jpg"  # Example image
+
+#training-data/PetImages/Cat/5.jpg
 
 # Preprocess the image
 hog_features, img_resized = preprocess_single_image(image_path)
