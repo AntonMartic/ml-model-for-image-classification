@@ -72,6 +72,10 @@ conda install anaconda::scikit-learn -y
 
 3. **Upload an image and classify it!**
 
+## Important
+
+The frontend was not the focus of this project..... as you can see, soooooo sorry for the spaghetti code.
+
 ## License
 
 This project is licensed under the **MIT License**.  
