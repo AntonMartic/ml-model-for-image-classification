@@ -1,13 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import skimage
 from skimage.io import imread
 from skimage.transform import resize
 from skimage.color import rgb2gray
 from skimage.feature import hog
+import pickle
 
 # Load the trained SVM model
-import pickle
 with open("svm_model.pkl", "rb") as f:
     svm_model = pickle.load(f)
 
@@ -19,23 +18,22 @@ def extract_hog(image):
     return features
 
 # Function to generate occlusion heatmap
-def occlusion_sensitivity(image_path, patch_size=20):
-
-    image = skimage.io.imread(image_path)  # Load the image
-    image_height, image_width = image.shape[:2]
-
+def occlusion_sensitivity(image_path, patch_size=10):
     original_image = imread(image_path)
-    original_image = resize(original_image, (128, 128))
+    original_image = resize(original_image, (128, 128))  # Resize for consistency
 
     # Get original prediction
     original_features = extract_hog(original_image).reshape(1, -1)
     original_prediction = svm_model.decision_function(original_features)
 
-    # Create heatmap
-    heatmap = np.zeros((image_height // patch_size, image_width // patch_size))
+    # Correct heatmap dimensions
+    heatmap_height = len(range(0, 128 - patch_size, patch_size))
+    heatmap_width = len(range(0, 128 - patch_size, patch_size))
+    heatmap = np.zeros((heatmap_height, heatmap_width))
 
-    for i in range(0, 128, patch_size):
-        for j in range(0, 128, patch_size):
+    # Iterate with correct bounds
+    for i_idx, i in enumerate(range(0, 128 - patch_size, patch_size)):
+        for j_idx, j in enumerate(range(0, 128 - patch_size, patch_size)):
             occluded_image = original_image.copy()
             occluded_image[i:i+patch_size, j:j+patch_size] = 0  # Mask part of image
 
@@ -44,7 +42,7 @@ def occlusion_sensitivity(image_path, patch_size=20):
 
             # Difference in prediction confidence
             importance = original_prediction - occluded_prediction
-            heatmap[i//patch_size, j//patch_size] = importance.item()
+            heatmap[i_idx, j_idx] = importance.item()
 
     # Normalize heatmap
     heatmap = np.maximum(heatmap, 0)
@@ -58,12 +56,12 @@ def occlusion_sensitivity(image_path, patch_size=20):
     plt.axis("off")
 
     plt.subplot(1, 2, 2)
-    plt.imshow(heatmap, cmap="jet", alpha=0.75)
+    plt.imshow(heatmap, cmap="jet", alpha=0.75, extent=[0, 128, 128, 0])  # Match image size
     plt.title("Feature Importance Heatmap")
     plt.axis("off")
 
     plt.show()
 
 # Run the visualization
-image_path = "test-images/dog1-test.jpg"
+image_path = ("training-data/PetImages/Dog/10.jpg")
 occlusion_sensitivity(image_path)
