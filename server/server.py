@@ -1,39 +1,35 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-# from PIL import Image
-import io
+import numpy as np
+import main
 
 app = Flask(__name__)
-CORS(app)   
+CORS(app)
 
-# @app.route('/classify-image', methods=['POST'])
-# def classify_image():
-#     if 'file' not in request.files:
-#         return jsonify({"error": "No file part"}), 400
+@app.route('/api/home', methods=['GET'])
+def home():
+    return jsonify({"message": "Welcome to Dog and Cat Classifier API"})
 
-#     file = request.files['file']
-#     if file.filename == '':
-#         return jsonify({"error": "No selected file"}), 400
+@app.route('/classify-image', methods=['POST'])
+def classify_image():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
 
-#     try:
-#         # Läs in bilden från requesten
-#         image = Image.open(io.BytesIO(file.read()))
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    try:
+        # Läs in och klassificera bilden
+        hog_features, _ = main.preprocess_single_image(file)
+        prediction = main.svm_model.predict(hog_features)
         
-#         # Använd din klassificeringsfunktion (förutsatt att den tar en PIL bild)
-#         result = your_classification_script.classify(image)
+        class_names = {0: "Cat", 1: "Dog"}
+        result = class_names[prediction[0]]
 
-#         # Skicka tillbaka resultatet (t.ex. om det är en hund eller katt)
-#         return jsonify({"result": result})
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
+        return jsonify({"result": result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-# if __name__ == '__main__':
-#     app.run(debug=True, port=8080)
-@app.route("/api/home", methods=['GET'])
-def return_home():
-    return jsonify({
-        "message": "Dog"
-    })
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True, port=8080)

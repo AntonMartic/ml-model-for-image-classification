@@ -1,7 +1,9 @@
 "use client"
 
 import { ChangeEvent, DragEvent, FormEvent, useEffect, useState } from "react"
+import { doc, DocumentData, onSnapshot } from "firebase/firestore";
 import { Image } from "lucide-react";
+import { db } from "@/components/firebase";
 
 export default function page() {
   const [file, setFile] = useState<File | null>(null);
@@ -10,26 +12,32 @@ export default function page() {
   const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [message, setMessage] = useState("Loading");
+  const [data, setData] = useState<DocumentData | undefined>(undefined);
+
+  // useEffect(() => {
+  //   const unsub = onSnapshot(doc(db, "classifications", "information"), (doc) => {
+  //     setData(doc.data());
+  //   });
+
+  //   return () => unsub();
+  // }, []);
 
   useEffect(() => {
     fetch("http://localhost:8080/api/home")
       .then((response) => response.json())
-      .then((data) => setMessage(data.message));
+      .then((data) => setMessage(data.message))
+      .catch(() => setMessage("API is offline"));
   }, []);
 
-
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) {
-      setError("Någonting gick fel");
-      return;
-    }
+    if (!e.target.files) return setError("Någonting gick fel");
 
     processFile(e.target.files[0]);
   };
 
   const handleDrop = (e: DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    if (e.dataTransfer.files.length > 0) {
       processFile(e.dataTransfer.files[0]);
       setIsDragging(false);
     }
@@ -51,10 +59,7 @@ export default function page() {
 
   const handleUpload = async (e: FormEvent) => {
     e.preventDefault();
-    if (!file) {
-      setError("Vänligen välj en fil");
-      return;
-    }
+    if (!file) return setError("Vänligen välj en fil");
 
     const formData = new FormData();
     formData.append("file", file);
@@ -68,12 +73,10 @@ export default function page() {
       const data = await response.json();
       if (response.ok) {
         setResult(data.result);
-        setError(null);
       } else {
-        setResult(null);
         setError(data.error || "Ett fel uppstod");
       }
-    } catch (error) {
+    } catch {
       setError("Fel vid uppladdning av fil");
     }
   };
@@ -138,6 +141,22 @@ export default function page() {
           </form>
         )}
         {error && <p className="text-red-500">{error}</p>}
+        <div className="grid grid-cols-2 gap-4">
+          <p className="text-left">Totalt antal klassifikationer:</p>
+          <p className="text-right">{data ? data.classifications : 0}</p>
+
+          <p className="text-left">Katter:</p>
+          <p className="text-right">{data ? data.cat : 0}</p>
+
+          <p className="text-left">Hundar:</p>
+          <p className="text-right">{data ? data.dog : 0}</p>
+
+          <p className="text-left">Korrekta klassifikationer:</p>
+          <p className="text-right">{data ? data.correctClassifications : 0}</p>
+
+          <p className="text-left">Felaktiga klassifikationer:</p>
+          <p className="text-right">{data ? data.wrongClassifications : 0}</p>
+        </div>
       </div>
     </>
   );
