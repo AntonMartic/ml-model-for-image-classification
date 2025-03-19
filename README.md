@@ -32,7 +32,7 @@ This project classifies images of cats and dogs using machine learning. It uses 
 
    ```bash
    python -m venv env
-   source env/bin/activate  # Windows: env\Scripts\activate
+   source venv/bin/activate  # Windows: env\Scripts\activate
    ```
 
 4. **Install Python dependencies**:
