@@ -1,54 +1,47 @@
 import pickle
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score
-
-import random
+from skimage.io import imread
+from skimage.transform import resize
+from skimage.color import rgb2gray
+from skimage.feature import hog
 import matplotlib.pyplot as plt
 
-# Load two HOG feature files
-with (open("hog_features/hog_features_part_1.pkl", "rb") as f1,
-      open("hog_features/hog_features_part_24.pkl", "rb") as f2):
-    X1, y1 = pickle.load(f1)
-    X2, y2 = pickle.load(f2)
-
-# Combine data
-X = np.vstack((X1, X2))  # Stack feature matrices
-y = np.hstack((y1, y2))  # Stack labels
-
-print(f"Feature matrix shape after combining: {X.shape}")  # Should be (2000, feature_length)
-print(f"Labels shape after combining: {y.shape}")          # Should be (2000,)
-
-# Split data into training (80%) and testing (20%)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Train an SVM model
-svm_model = SVC(kernel="rbf", C=10, gamma=0.01)  # Try kernel='rbf' later
-svm_model.fit(X_train, y_train)
-
-# Predict on test set
-y_pred = svm_model.predict(X_test)
-
-# Evaluate accuracy
-accuracy = accuracy_score(y_test, y_pred)
-print(f"Test Accuracy: {accuracy:.4f}")
 
 
+# Function to preprocess and extract HOG features from a single image
+def preprocess_single_image(image_path):
+    img = imread(image_path)
+    img_resized = resize(img, (128, 128), anti_aliasing=True)
+    img_gray = rgb2gray(img_resized)
 
-# Select a few random test images
-num_samples = 10  # Choose how many to display
-random_indices = random.sample(range(len(X_test)), num_samples)
-test_images = X_test[random_indices]
-true_labels = y_test[random_indices]
-predicted_labels = svm_model.predict(test_images)
+    # Extract HOG features
+    features = hog(img_gray, pixels_per_cell=(8, 8),
+                   cells_per_block=(2, 2), orientations=9)
 
-# Plot images with predicted vs actual labels
-fig, axes = plt.subplots(2, 5, figsize=(12, 5))
-for i, ax in enumerate(axes.ravel()):
-    ax.imshow(X_test_original[random_indices[i]])  # Assuming X_test_original has original images
-    ax.set_title(f"Pred: {predicted_labels[i]}, True: {true_labels[i]}")
-    ax.axis("off")
+    return features.reshape(1, -1), img_resized  # Return reshaped features and original image
 
-plt.tight_layout()
+
+# Load the trained SVM model
+with open("svm_model.pkl", "rb") as model_file:
+    svm_model = pickle.load(model_file)
+
+print("SVM model loaded successfully!")
+
+# Choose a test image from your dataset (Modify this path to test different images)
+image_path = "training-data/PetImages/Cat/5.jpg"  # Example image
+
+# Preprocess the image
+hog_features, img_resized = preprocess_single_image(image_path)
+
+# Make prediction
+prediction = svm_model.predict(hog_features)
+
+# Map label to class name
+class_names = {0: "Cat", 1: "Dog"}
+predicted_label = class_names[prediction[0]]
+
+# Display the image with predicted label
+plt.imshow(img_resized)
+plt.title(f"Predicted: {predicted_label}")
+plt.axis("off")
 plt.show()
