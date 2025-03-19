@@ -1,60 +1,54 @@
-import os
 import pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score
 
-# Folder where HOG feature files are saved
-hog_folder = "hog_features"  # Change this if needed
+import random
+import matplotlib.pyplot as plt
 
-# Lists to store combined data
-X_combined = []
-y_combined = []
+# Load two HOG feature files
+with (open("hog_features/hog_features_part_1.pkl", "rb") as f1,
+      open("hog_features/hog_features_part_24.pkl", "rb") as f2):
+    X1, y1 = pickle.load(f1)
+    X2, y2 = pickle.load(f2)
 
-# Load all .pkl files
-for file in os.listdir(hog_folder):
-    if file.endswith(".pkl"):  # Ensure we only process .pkl files
-        file_path = os.path.join(hog_folder, file)
-        with open(file_path, "rb") as f:
-            X_part, y_part = pickle.load(f)  # Load the features and labels
-            X_combined.append(X_part)
-            y_combined.append(y_part)
+# Combine data
+X = np.vstack((X1, X2))  # Stack feature matrices
+y = np.hstack((y1, y2))  # Stack labels
 
-# Convert to NumPy arrays
-X_combined = np.vstack(X_combined)  # Stack feature arrays vertically
-y_combined = np.hstack(y_combined)  # Stack labels horizontally
+print(f"Feature matrix shape after combining: {X.shape}")  # Should be (2000, feature_length)
+print(f"Labels shape after combining: {y.shape}")          # Should be (2000,)
 
-# Print dataset shape
-print(f"Combined Feature matrix shape: {X_combined.shape}")  # (num_samples, num_features)
-print(f"Combined Labels shape: {y_combined.shape}")          # (num_samples,)
+# Split data into training (80%) and testing (20%)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-
-
-
-# Split dataset into 80% training and 20% testing
-X_train, X_test, y_train, y_test = train_test_split(X_combined, y_combined, test_size=0.2, random_state=42, stratify=y_combined)
-
-# Print dataset shapes
-print(f"Training data shape: {X_train.shape}, Training labels shape: {y_train.shape}")
-print(f"Testing data shape: {X_test.shape}, Testing labels shape: {y_test.shape}")
-
-"""
-
-# Initialize SVM classifier
-svm_model = SVC(kernel='linear', random_state=42)
-
-# Train the model on the training data
+# Train an SVM model
+svm_model = SVC(kernel="rbf", C=10, gamma=0.01)  # Try kernel='rbf' later
 svm_model.fit(X_train, y_train)
 
-# Make predictions on the test set
+# Predict on test set
 y_pred = svm_model.predict(X_test)
 
-# Evaluate performance
+# Evaluate accuracy
 accuracy = accuracy_score(y_test, y_pred)
 print(f"Test Accuracy: {accuracy:.4f}")
 
-# Print detailed classification report
-print("Classification Report:\n", classification_report(y_test, y_pred))
 
-"""
+
+# Select a few random test images
+num_samples = 10  # Choose how many to display
+random_indices = random.sample(range(len(X_test)), num_samples)
+test_images = X_test[random_indices]
+true_labels = y_test[random_indices]
+predicted_labels = svm_model.predict(test_images)
+
+# Plot images with predicted vs actual labels
+fig, axes = plt.subplots(2, 5, figsize=(12, 5))
+for i, ax in enumerate(axes.ravel()):
+    ax.imshow(X_test_original[random_indices[i]])  # Assuming X_test_original has original images
+    ax.set_title(f"Pred: {predicted_labels[i]}, True: {true_labels[i]}")
+    ax.axis("off")
+
+plt.tight_layout()
+plt.show()
