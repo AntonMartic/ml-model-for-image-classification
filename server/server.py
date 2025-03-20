@@ -23,21 +23,19 @@ def classify_image():
         return jsonify({"error": "No selected file"}), 400
 
     try:
-        # Extract HOG features
-        hog_features, img_resized = main.preprocess_single_image(file)
-        file.seek(0)  # Reset file pointer
+        # Preprocess image once
+        preprocessed_data = main.preprocess_single_image(file)
 
         # Predict class
-        prediction = main.svm_model.predict(hog_features)
+        prediction = main.svm_model.predict(preprocessed_data["features"])
         class_names = {0: "Cat", 1: "Dog"}
         result = class_names[prediction[0]]
 
         # Generate occlusion sensitivity heatmap
-        heatmap_base64 = main.occlusion_sensitivity(file, main.svm_model, main.preprocess_single_image)
-        file.seek(0)  # Reset file pointer again
-        
+        heatmap_base64 = main.occlusion_sensitivity(file, main.svm_model, preprocessed_data)
+
         # Generate HOG feature visualization
-        hog_viz_base64 = main.visualize_hog_features(file)
+        hog_viz_base64 = main.visualize_hog_features(preprocessed_data)
 
         return jsonify({
             "result": result,
@@ -47,6 +45,7 @@ def classify_image():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
     
 if __name__ == '__main__':
     app.run(debug=True, port=8080)

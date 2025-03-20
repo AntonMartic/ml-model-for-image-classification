@@ -7,6 +7,7 @@ import { db } from "@/components/firebase";
 import { AppStateProps, OutputProps } from "@/components/types";
 import { ClassificationResult } from "@/components/classification";
 import { MainButton } from "@/components/mainbutton";
+import { ProcessFile } from "@/components/fileprocessing";
 
 export default function page() {
   const [file, setFile] = useState<File | null>(null);
@@ -50,39 +51,18 @@ export default function page() {
       error: "Something went wrong",
     });
 
-    processFile(e.target.files[0]);
+    ProcessFile(e.target.files[0], setFile, appState, setAppState, setPreview);
   };
 
   const handleDrop = (e: DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
     if (e.dataTransfer.files.length > 0) {
-      processFile(e.dataTransfer.files[0]);
+      ProcessFile(e.dataTransfer.files[0], setFile, appState, setAppState, setPreview);
       setAppState({
         ...appState,
         isDragging: false,
       });
     }
-  };
-
-  const processFile = (selectedFile: File) => {
-    setFile(selectedFile);
-    setResults({
-      result: null,
-      hogVisualization: null,
-      heatmap: null,
-    });
-    setAppState({
-      ...appState,
-      error: null,
-    });
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === "string") {
-        setPreview(reader.result);
-      }
-    };
-    reader.readAsDataURL(selectedFile);
   };
 
   const handleUpload = async (e: FormEvent) => {
@@ -153,6 +133,7 @@ export default function page() {
               <img src={results.hogVisualization ?? undefined} alt="HOG Features" className="rounded-md h-52" />
               <img src={results.heatmap ?? undefined} alt="Heatmap" className="rounded-md h-52" />
             </div>
+            <p className="text-base font-medium text-neutral-950">Dark blue: Less important for the classification, Red: More important for the classification</p>
             <p className="text-3xl font-bold text-neutral-950">Result: {results.result}</p>
             <ClassificationResult appState={appState} results={results} dbData={dbData} setAppState={setAppState} setResults={setResults} setFile={setFile} setPreview={setPreview} />
           </div>
