@@ -38,4 +38,6 @@ export type DataDisplayProps = {
 export type MainButtonProps = {
     onClick: (event: MouseEvent<HTMLButtonElement>) => void;
     text: string;
+    className?: string;
+    value?: string;
 }
