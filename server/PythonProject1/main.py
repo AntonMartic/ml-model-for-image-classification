@@ -27,7 +27,7 @@ with open("svm_model.pkl", "rb") as model_file:
 print("SVM model loaded successfully!")
 
 # Choose a test image from your dataset (Modify this path to test different images)
-image_path = "test-images/marcus.jpg"  # Example image
+image_path = "test-images/dog1-test.jpg"  # Example image
 
 #training-data/PetImages/Cat/5.jpg
 

@@ -63,6 +63,6 @@ def occlusion_sensitivity(image_path, patch_size=10):
     plt.show()
 
 # Run the visualization
-image_path = ("test-images/marcus.jpg")
+image_path = ("test-images/dog1-test.jpg")
 #training-data/PetImages/Dog/10.jpg
 occlusion_sensitivity(image_path)
