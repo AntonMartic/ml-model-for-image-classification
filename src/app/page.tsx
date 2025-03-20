@@ -23,14 +23,16 @@ export default function page() {
   const [message, setMessage] = useState("Loading");
   const [data, setData] = useState<DocumentData | undefined>(undefined);
   const [hasAnswered, setHasAnswered] = useState(false);
+  const [hogVisualization, setHogVisualization] = useState<string | null>(null);
+  const [heatmap, setHeatmap] = useState<string | null>(null);
 
-  useEffect(() => {
-    const unsub = onSnapshot(doc(db, "classifications", "information"), (doc) => {
-      setData(doc.data());
-    });
+  // useEffect(() => {
+  //   const unsub = onSnapshot(doc(db, "classifications", "information"), (doc) => {
+  //     setData(doc.data());
+  //   });
 
-    return () => unsub();
-  }, []);
+  //   return () => unsub();
+  // }, []);
 
   useEffect(() => {
     fetch("http://localhost:8080/api/home")
@@ -83,6 +85,8 @@ export default function page() {
       const data = await response.json();
       if (response.ok) {
         setResult(data.result);
+        setHeatmap(`data:image/png;base64,${data.heatmap}`);
+        setHogVisualization(`data:image/png;base64,${data.hog_visualization}`);
       } else {
         setError(data.error || "An error occurred");
       }
@@ -138,12 +142,16 @@ export default function page() {
         <div className="flex flex-col gap-4 justify-center items-center">
           <h1 className="font-extrabold text-neutral-950 text-7xl">Dog and Cat Classifier</h1>
           <p className="text-4xl font-bold text-neutral-950">{message}</p>
-          <p className="text-neutral-950">Supported file types: JPEG/JPG and PNG</p>
+          <p className="text-neutral-950">Supported file types: We don't know (Jpeg?, PNG?)</p>
+          <p className="text-left font-extrabold">Classifications: {data ? data.classifications : 0}</p>
         </div>
-
         <div className="flex flex-col items-center justify-center w-full h-fit gap-6">
           <div className={`flex flex-col items-center justify-center w-3xl gap-4 transition duration-300 ${result ? "scale-100 pointer-events-auto" : "scale-0 pointer-events-none h-0"}`}>
-            <img src={preview ?? undefined} alt="Preview" className="rounded-md h-52" />
+            <div className="flex justify-center gap-4">
+              <img src={preview ?? undefined} alt="Preview" className="rounded-md h-52" />
+              <img src={hogVisualization ?? undefined} alt="HOG Features" className="rounded-md h-52" />
+              <img src={heatmap ?? undefined} alt="Heatmap" className="rounded-md h-52" />
+            </div>
             <p className="text-3xl font-bold text-neutral-950">Result: {result}</p>
             <div className={`flex flex-col items-center gap-4 transition duration-300 ease-in-out ${hasAnswered ? "scale-0 pointer-events-none h-0 opacity-0" : "scale-100 pointer-events-auto opacity-100"}`}>
               <p>Was this classification correct?</p>
@@ -218,7 +226,6 @@ export default function page() {
           </div>
         </div>
         <p className={`text-red-500 transition duration-300 ease-in-out ${error ? "scale-100" : "scale-0"}`}>Error: {error}</p>
-        <p className="text-left font-extrabold">Classifications: {data ? data.classifications : 0}</p>
       </div>
     </>
   );

@@ -1,14 +1,17 @@
+import base64
+import io
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import numpy as np
-import main
+import matplotlib.pyplot as plt
+import main  # Importerar din klassificeringslogik
 
 app = Flask(__name__)
 CORS(app)
 
 @app.route('/api/home', methods=['GET'])
 def home():
-    return jsonify({"message": "Welcome to Dog and Cat Classifier API"})
+    return jsonify({"message": "API Online"})
 
 @app.route('/classify-image', methods=['POST'])
 def classify_image():
@@ -20,16 +23,30 @@ def classify_image():
         return jsonify({"error": "No selected file"}), 400
 
     try:
-        # Läs in och klassificera bilden
-        hog_features, _ = main.preprocess_single_image(file)
+        # Extract HOG features
+        hog_features, img_resized = main.preprocess_single_image(file)
+        file.seek(0)  # Reset file pointer
+
+        # Predict class
         prediction = main.svm_model.predict(hog_features)
-        
         class_names = {0: "Cat", 1: "Dog"}
         result = class_names[prediction[0]]
 
-        return jsonify({"result": result})
+        # Generate occlusion sensitivity heatmap
+        heatmap_base64 = main.occlusion_sensitivity(file, main.svm_model, main.preprocess_single_image)
+        file.seek(0)  # Reset file pointer again
+        
+        # Generate HOG feature visualization
+        hog_viz_base64 = main.visualize_hog_features(file)
+
+        return jsonify({
+            "result": result,
+            "heatmap": heatmap_base64,
+            "hog_visualization": hog_viz_base64
+        })
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
+    
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
