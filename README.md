@@ -31,7 +31,8 @@ This project classifies images of cats and dogs using machine learning. It uses 
 3. **Set up a virtual environment**:
 
    ```bash
-   python -m venv env
+   cd server
+   python -m venv venv
    source venv/bin/activate  # Windows: venv\Scripts\activate
    ```
 

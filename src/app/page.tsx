@@ -1,34 +1,31 @@
 "use client"
 
-import { ChangeEvent, DragEvent, FormEvent, MouseEvent, useEffect, useState } from "react"
-import { doc, DocumentData, onSnapshot, updateDoc } from "firebase/firestore";
+import { ChangeEvent, DragEvent, FormEvent, useEffect, useState } from "react"
+import { doc, DocumentData, onSnapshot } from "firebase/firestore";
 import { Image } from "lucide-react";
 import { db } from "@/components/firebase";
-import DataDisplay from "@/components/datadisplay";
-
-type DBDocument = {
-  cat: number,
-  dog: number,
-  classifications: number,
-  correctClassifications: number,
-  wrongClassifications: number,
-}
+import { AppStateProps, OutputProps } from "@/components/types";
+import { ClassificationResult } from "@/components/classification";
+import { MainButton } from "@/components/mainbutton";
 
 export default function page() {
   const [file, setFile] = useState<File | null>(null);
-  const [result, setResult] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [message, setMessage] = useState("Loading");
-  const [data, setData] = useState<DocumentData | undefined>(undefined);
-  const [hasAnswered, setHasAnswered] = useState(false);
-  const [hogVisualization, setHogVisualization] = useState<string | null>(null);
-  const [heatmap, setHeatmap] = useState<string | null>(null);
+  const [appState, setAppState] = useState<AppStateProps>({
+    error: null,
+    isDragging: false,
+    message: "Loading...",
+  })
+  const [dbData, setDBData] = useState<DocumentData | undefined>(undefined);
+  const [results, setResults] = useState<OutputProps>({
+    result: null,
+    hogVisualization: null,
+    heatmap: null,
+  })
 
   // useEffect(() => {
   //   const unsub = onSnapshot(doc(db, "classifications", "information"), (doc) => {
-  //     setData(doc.data());
+  //     setDBData(doc.data());
   //   });
 
   //   return () => unsub();
@@ -37,12 +34,21 @@ export default function page() {
   useEffect(() => {
     fetch("http://localhost:8080/api/home")
       .then((response) => response.json())
-      .then((data) => setMessage(data.message))
-      .catch(() => setMessage("API is offline"));
+      .then((data) => setAppState({
+        ...appState,
+        message: data.message,
+      }))
+      .catch(() => setAppState({
+        ...appState,
+        message: "API is offline",
+      }));
   }, []);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return setError("Something went wrong");
+    if (!e.target.files) return setAppState({
+      ...appState,
+      error: "Something went wrong",
+    });
 
     processFile(e.target.files[0]);
   };
@@ -51,14 +57,24 @@ export default function page() {
     e.preventDefault();
     if (e.dataTransfer.files.length > 0) {
       processFile(e.dataTransfer.files[0]);
-      setIsDragging(false);
+      setAppState({
+        ...appState,
+        isDragging: false,
+      });
     }
   };
 
   const processFile = (selectedFile: File) => {
     setFile(selectedFile);
-    setResult(null);
-    setError(null);
+    setResults({
+      result: null,
+      hogVisualization: null,
+      heatmap: null,
+    });
+    setAppState({
+      ...appState,
+      error: null,
+    });
 
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -71,7 +87,10 @@ export default function page() {
 
   const handleUpload = async (e: FormEvent) => {
     e.preventDefault();
-    if (!file) return setError("Please select an image");
+    if (!file) return setAppState({
+      ...appState,
+      error: "Please select an image",
+    });
 
     const formData = new FormData();
     formData.append("file", file);
@@ -84,113 +103,66 @@ export default function page() {
 
       const data = await response.json();
       if (response.ok) {
-        setResult(data.result);
-        setHeatmap(`data:image/png;base64,${data.heatmap}`);
-        setHogVisualization(`data:image/png;base64,${data.hog_visualization}`);
+        setResults({
+          result: data.result,
+          heatmap: `data:image/png;base64,${data.heatmap}`,
+          hogVisualization: `data:image/png;base64,${data.hog_visualization}`,
+        })
       } else {
-        setError(data.error || "An error occurred");
+        setAppState({
+          ...appState,
+          error: data.error || "An error occurred",
+        });
       }
     } catch {
-      setError("Error when uploading file");
+      setAppState({
+        ...appState,
+        error: "Error when uploading file",
+      });
     }
   };
 
-  async function AnswerForm(e: MouseEvent<HTMLButtonElement>) {
-    e.preventDefault();
-
-    if (!result) {
-      return
-    }
-
-    const value = (e.currentTarget as HTMLButtonElement).value;
-
-    let writeRes: DBDocument = {
-      cat: 0,
-      dog: 0,
-      classifications: 0,
-      wrongClassifications: 0,
-      correctClassifications: 0,
-    }
-
-    if (result === "Dog") writeRes.dog += 1;
-    else writeRes.cat += 1;
-
-    if (value === "true") {
-      writeRes.correctClassifications += 1;
-    } else {
-      writeRes.wrongClassifications += 1;
-    }
-
-    writeRes.classifications += 1;
-
-    const docRef = doc(db, "classifications", "information");
-    await updateDoc(docRef, {
-      cat: data?.cat + writeRes.cat,
-      dog: data?.dog + writeRes.dog,
-      classifications: data?.classifications + writeRes.classifications,
-      wrongClassifications: data?.wrongClassifications + writeRes.wrongClassifications,
-      correctClassifications: data?.correctClassifications + writeRes.correctClassifications,
+  function Reset() {
+    setFile(null);
+    setPreview(null);
+    setResults({
+      result: null,
+      hogVisualization: null,
+      heatmap: null,
+    });
+    setAppState({
+      ...appState,
+      isDragging: false,
+      error: null,
     })
-
-    setHasAnswered(true);
   }
-
 
   return (
     <>
       <div className="flex flex-col items-center justify-center w-full gap-10 h-svh bg-neutral-50">
         <div className="flex flex-col gap-4 justify-center items-center">
           <h1 className="font-extrabold text-neutral-950 text-7xl">Dog and Cat Classifier</h1>
-          <p className="text-4xl font-bold text-neutral-950">{message}</p>
+          <p className="text-4xl font-bold text-neutral-950">{appState.message}</p>
           <p className="text-neutral-950">Supported file types: We don't know (Jpeg?, PNG?)</p>
-          <p className="text-left font-extrabold">Classifications: {data ? data.classifications : 0}</p>
+          <p className="text-left font-extrabold">Classifications: {dbData ? dbData.classifications : 0}</p>
         </div>
         <div className="flex flex-col items-center justify-center w-full h-fit gap-6">
-          <div className={`flex flex-col items-center justify-center w-3xl gap-4 transition duration-300 ${result ? "scale-100 pointer-events-auto" : "scale-0 pointer-events-none h-0"}`}>
+          <div className={`flex flex-col items-center justify-center w-3xl gap-4 transition duration-300 ${results.result ? "scale-100 pointer-events-auto" : "scale-0 pointer-events-none h-0"}`}>
             <div className="flex justify-center gap-4">
               <img src={preview ?? undefined} alt="Preview" className="rounded-md h-52" />
-              <img src={hogVisualization ?? undefined} alt="HOG Features" className="rounded-md h-52" />
-              <img src={heatmap ?? undefined} alt="Heatmap" className="rounded-md h-52" />
+              <img src={results.hogVisualization ?? undefined} alt="HOG Features" className="rounded-md h-52" />
+              <img src={results.heatmap ?? undefined} alt="Heatmap" className="rounded-md h-52" />
             </div>
-            <p className="text-3xl font-bold text-neutral-950">Result: {result}</p>
-            <div className={`flex flex-col items-center gap-4 transition duration-300 ease-in-out ${hasAnswered ? "scale-0 pointer-events-none h-0 opacity-0" : "scale-100 pointer-events-auto opacity-100"}`}>
-              <p>Was this classification correct?</p>
-              <div className="grid grid-cols-2 gap-4">
-                <button className="py-4 text-xl transition duration-300 ease-in-out bg-neutral-200 cursor-pointer px-14 rounded-xl text-neutral-950 hover:bg-green-500"
-                  value={"true"}
-                  onClick={AnswerForm}>
-                  Yes
-                </button>
-                <button className="py-4 text-xl transition duration-300 ease-in-out bg-neutral-200 cursor-pointer px-14 rounded-xl text-neutral-950 hover:bg-red-500 hover:text-neutral-50"
-                  value={"false"}
-                  onClick={AnswerForm}>
-                  No
-                </button>
-              </div>
-            </div>
-            <div className={`flex flex-col items-center gap-4 transition duration-300 ease-in-out ${hasAnswered ? "scale-100 pointer-events-auto opacity-100" : "scale-0 pointer-events-none h-0 opacity-0"}`}>
-              <DataDisplay data={data}
-              />
-              <button className="py-4 text-xl transition duration-300 ease-in-out bg-neutral-200 cursor-pointer px-14 rounded-xl text-neutral-950 hover:bg-neutral-500"
-                onClick={(e) => {
-                  setFile(null);
-                  setPreview(null);
-                  setResult(null);
-                  setError(null);
-                  setHasAnswered(false);
-                }}
-              >
-                Classify another image
-              </button>
-            </div>
+            <p className="text-3xl font-bold text-neutral-950">Result: {results.result}</p>
+            <ClassificationResult appState={appState} results={results} dbData={dbData} setAppState={setAppState} setResults={setResults} setFile={setFile} setPreview={setPreview} />
           </div>
-          <div className={`flex flex-col items-center justify-center w-full gap-6 transition duration-100 ease-in-out ${result ? "scale-0 pointer-events-none h-0 opacity-0" : "opacity-100 scale-100 pointer-events-auto h-fit"}`}>
+          <div className={`flex flex-col items-center justify-center w-full gap-6 transition duration-100 ease-in-out ${results.result ? "scale-0 pointer-events-none h-0 opacity-0" : "opacity-100 scale-100 pointer-events-auto h-fit"}`}>
             <label className={`flex flex-col items-center justify-center w-3xl gap-2 font-medium text-center transition duration-300 ease-in-out h-60 rounded-3xl 
                     ${preview ? "text-neutral-100 text-[0rem]" : "hover:bg-neutral-200 cursor-pointer text-neutral-400 text-xl"}
-                    ${isDragging ? "!bg-neutral-300" : "bg-neutral-100"}`}
+                    ${appState.isDragging ? "!bg-neutral-300" : "bg-neutral-100"}`}
               htmlFor="file-upload"
-              onDragEnter={() => setIsDragging(true)}
-              onDragLeave={() => setIsDragging(false)}
+              onDragEnter={() => setAppState({ ...appState, isDragging: true })}
+              onDragLeave={() => setAppState({ ...appState, isDragging: false })}
               onDrop={handleDrop}
               onDragOver={(e) => e.preventDefault()}
             >
@@ -203,11 +175,7 @@ export default function page() {
                 <button
                   type="button"
                   className={`px-8 py-1 text-sm font-medium transition duration-100 ease-in-out bg-red-500 cursor-pointer rounded-xl text-neutral-50 hover:bg-red-700 ${preview ? "scale-100 pointer-events-auto" : "scale-0 pointer-events-none h-0 w-0"}`}
-                  onClick={() => {
-                    setFile(null);
-                    setPreview(null);
-                    setResult(null);
-                  }}
+                  onClick={Reset}
                 >
                   Change image
                 </button>
@@ -219,13 +187,10 @@ export default function page() {
             </label>
 
             {!preview && (<input type="file" id="file-upload" className="hidden" accept="image/png, image/jpeg" onChange={handleFileChange} />)}
-            <button className="py-4 text-xl transition duration-300 ease-in-out bg-neutral-400 cursor-pointer px-14 rounded-xl text-neutral-50 hover:bg-neutral-500"
-              onClick={handleUpload}>
-              Classify
-            </button>
+            <MainButton text="Classify" onClick={handleUpload} />
           </div>
         </div>
-        <p className={`text-red-500 transition duration-300 ease-in-out ${error ? "scale-100" : "scale-0"}`}>Error: {error}</p>
+        <p className={`text-red-500 transition duration-300 ease-in-out ${appState.error ? "scale-100" : "scale-0"}`}>Error: {appState.error}</p>
       </div>
     </>
   );

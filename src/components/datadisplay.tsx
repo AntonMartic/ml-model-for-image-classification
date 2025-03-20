@@ -1,10 +1,6 @@
-import { DocumentData } from "firebase/firestore";
+import { DataDisplayProps } from "./types";
 
-type DataDisplay = {
-    data: DocumentData | undefined;
-}
-
-export default function DataDisplay({ data }: DataDisplay) {
+export default function DataDisplay({ data }: DataDisplayProps) {
     return (
         <div className="grid grid-cols-2 gap-4">
             <p className="text-left font-semibold text-neutral-950">Katter:</p>
