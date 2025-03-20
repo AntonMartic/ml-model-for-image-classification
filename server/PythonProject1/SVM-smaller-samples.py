@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
+from sklearn.ensemble import RandomForestClassifier
 
 import random
 import matplotlib.pyplot as plt
@@ -24,7 +25,7 @@ print(f"Labels shape after combining: {y.shape}")          # Should be (2000,)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Train an SVM model
-svm_model = SVC(kernel="rbf", C=10, gamma=0.01)  # Try kernel='rbf' later
+svm_model = SVC(kernel="rbf", C=5, gamma=0.01)  # Try kernel='rbf' later
 svm_model.fit(X_train, y_train)
 
 # Predict on test set
@@ -35,7 +36,7 @@ accuracy = accuracy_score(y_test, y_pred)
 print(f"Test Accuracy: {accuracy:.4f}")
 
 # Save trained SVM model to a file
-with open("svm_model.pkl", "wb") as model_file:
+"""with open("svm_model.pkl", "wb") as model_file:
     pickle.dump(svm_model, model_file)
 
-print("SVM model saved as svm_model.pkl")
+print("SVM model saved as svm_model.pkl")"""
