@@ -1,7 +1,5 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import numpy as np
-import matplotlib.pyplot as plt
 import main  # Importerar din klassificeringslogik
 
 app = Flask(__name__)
@@ -24,12 +22,19 @@ def classify_image():
         file.seek(0)  # Reset file pointer
 
         # Predict class
-        prediction = main.svm_model.predict(hog_features)
+        if class_type == "SVM":
+            prediction = main.svm_model.predict(hog_features)
+        else:
+            prediction = main.rf_model.predict(hog_features)
+
         class_names = {0: "Cat", 1: "Dog"}
         result = class_names[prediction[0]]
 
         # Generate occlusion sensitivity heatmap
-        heatmap_base64 = main.occlusion_sensitivity(file, main.svm_model, main.preprocess_single_image)
+        if class_type == "SVM":
+            heatmap_base64 = main.occlusion_sensitivity(file, main.svm_model, main.preprocess_single_image)
+        else:
+            heatmap_base64 = main.occlusion_sensitivity(file, main.rf_model, main.preprocess_single_image)
         file.seek(0)  # Reset file pointer again
         
         # Generate HOG feature visualization
