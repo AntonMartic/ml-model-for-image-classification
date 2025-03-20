@@ -67,14 +67,17 @@ export default function page() {
   };
 
   const handleUpload = async (e: FormEvent) => {
+    console.log((e.target as HTMLButtonElement).value);
     e.preventDefault();
     if (!file) return setAppState({
       ...appState,
       error: "Please select an image",
     });
 
+
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("type", (e.target as HTMLButtonElement).value);
 
     try {
       const response = await fetch("http://localhost:8080/classify-image", {
@@ -169,7 +172,10 @@ export default function page() {
             </label>
 
             {!preview && (<input type="file" id="file-upload" className="hidden" accept="image/png, image/jpeg" onChange={handleFileChange} />)}
-            <MainButton text="Classify" onClick={handleUpload} />
+            <div className="flex justify-center gap-6 items-center">
+              <MainButton text="SVM" onClick={handleUpload} className="!important hover:bg-blue-500!" value="SVM" />
+              <MainButton text="Random Forest" onClick={handleUpload} className="!important hover:bg-green-500!" value="RF" />
+            </div>
           </div>
         </div>
         <p className={`text-red-500 transition duration-300 ease-in-out ${appState.error ? "scale-100" : "scale-0"}`}>Error: {appState.error}</p>
