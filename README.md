@@ -3,6 +3,10 @@
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Contributors](https://img.shields.io/badge/contributors-3-orange)
 
+## Important
+
+The frontend was not the focus of this project..... as you can see, soooooo sorry for the spaghetti code.
+
 ## Project Overview
 
 This project classifies images of cats and dogs using machine learning. It uses a trained model to predict whether an uploaded image contains a cat or a dog.
@@ -72,10 +76,6 @@ conda install anaconda::scikit-learn -y
    The frontend will be available at http://localhost:3000
 
 3. **Upload an image and classify it!**
-
-## Important
-
-The frontend was not the focus of this project..... as you can see, soooooo sorry for the spaghetti code.
 
 ## License
 
