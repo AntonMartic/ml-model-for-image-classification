@@ -20,7 +20,7 @@ export function ClassificationResult({ appState, results, dbData, setAppState, s
             ...appState,
             error: null,
         })
-        setHasAnswered(true);
+        setHasAnswered(false);
     }
 
     async function AnswerForm(e: MouseEvent<HTMLButtonElement>) {
