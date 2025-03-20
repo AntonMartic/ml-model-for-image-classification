@@ -24,7 +24,7 @@ def preprocess_single_image(image):
     features = hog(img_gray, pixels_per_cell=(8, 8), cells_per_block=(2, 2), orientations=9)
     return {"features": features.reshape(1, -1), "img_resized": img_resized}  # Returnera dictionary
 
-def occlusion_sensitivity(image_file, model, preprocessed_data, patch_size=16, stride=8):
+def occlusion_sensitivity(model, preprocessed_data, patch_size=16, stride=8):
     img_resized = preprocessed_data["img_resized"]
     original_features = preprocessed_data["features"]
 

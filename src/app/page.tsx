@@ -42,6 +42,7 @@ export default function page() {
       .catch(() => setAppState({
         ...appState,
         message: "API is offline",
+        error: "API is offline",
       }));
   }, []);
 
