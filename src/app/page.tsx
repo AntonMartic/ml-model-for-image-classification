@@ -33,7 +33,7 @@ export default function page() {
   // }, []);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/home`)
+    fetch(`http://localhost:8080/api/home`)
       .then((response) => response.json())
       .then((data) => setAppState({
         ...appState,
@@ -81,7 +81,7 @@ export default function page() {
     formData.append("type", (e.target as HTMLButtonElement).value);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/classify-image`, {
+      const response = await fetch(`http://localhost:8080/classify-image`, {
         method: "POST",
         body: formData,
       });
