@@ -33,7 +33,7 @@ export default function page() {
   // }, []);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/home")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/home`)
       .then((response) => response.json())
       .then((data) => setAppState({
         ...appState,
@@ -45,6 +45,7 @@ export default function page() {
         error: "API is offline",
       }));
   }, []);
+
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return setAppState({
@@ -80,7 +81,7 @@ export default function page() {
     formData.append("type", (e.target as HTMLButtonElement).value);
 
     try {
-      const response = await fetch("http://localhost:8080/classify-image", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/classify-image`, {
         method: "POST",
         body: formData,
       });
