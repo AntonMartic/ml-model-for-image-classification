@@ -12,11 +12,11 @@ import io
 import base64
 
 # Load the trained SVM model
-with open("PythonProject1/svm_model.pkl", "rb") as model_file_svm:
+with open("svm_model.pkl", "rb") as model_file_svm:
     svm_model = pickle.load(model_file_svm) 
 print("SVM model loaded successfully!")
 
-with open("PythonProject1/rf_model.pkl", "rb") as model_file_rf:
+with open("rf_model.pkl", "rb") as model_file_rf:
     rf_model = pickle.load(model_file_rf)
 print("RF model loaded successfully!")
 
