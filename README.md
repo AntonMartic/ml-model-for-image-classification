@@ -11,6 +11,8 @@ The frontend was not the focus of this project..... as you can see, soooooo sorr
 
 This project classifies images of cats and dogs using machine learning. It uses a trained model to predict whether an uploaded image contains a cat or a dog.
 
+You can try the live version of the app [here](https://tnm119-ml.up.railway.app/).
+
 ## Features
 
 - Upload an image to classify it as a cat or dog 🐱🐶
