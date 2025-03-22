@@ -12,18 +12,30 @@ import pickle
 #### TEST ####
 # test resize, grayscale and hog features for a single image
 
+
+# Load and preprocess image
 img_path_test = "training-data/PetImages/Cat/1.jpg"
-img_test = imread(img_path_test)  # Load the image
+img_test = imread(img_path_test)  # Load image
 img_resized_test = resize(img_test, (128, 128), anti_aliasing=True)  # Resize
-img_gray_test = img_as_float(rgb2gray(img_resized_test))  # Convert to grayscale & normalize (ensuring pixel values are between 0 and 1)
+img_gray_test = img_as_float(rgb2gray(img_resized_test))  # Convert to grayscale
 
-# Extract HOG features and visualize
+# Extract HOG features with visualization
 hog_features_test, hog_image_test = hog(img_gray_test, pixels_per_cell=(8, 8),
-                              cells_per_block=(2, 2), orientations=9,
-                              visualize=True)
+                                        cells_per_block=(2, 2), orientations=9,
+                                        visualize=True, feature_vector=False)
 
+# Define which block to visualize (adjust as needed)
+block_x, block_y = 9, 7  # Block index (row, column)
 
-fig, ax = plt.subplots(1, 3, figsize=(15, 5))
+# Extract the histogram for the selected block
+selected_block_hist = hog_features_test[block_x, block_y].sum(axis=(0,1))  # Sum over 2x2 cells
+  # 9-bin histogram
+
+# Gradient directions
+orientations = np.linspace(0, np.pi, 9, endpoint=False)  # 9 bins (0 to π)
+
+# Visualize the feature vector as a histogram
+fig, ax = plt.subplots(1, 4, figsize=(20, 5))
 
 ax[0].imshow(img_test)
 ax[0].set_title("Original Image")
@@ -37,10 +49,39 @@ ax[2].imshow(hog_image_test, cmap="gray")
 ax[2].set_title("HOG Features")
 ax[2].axis("off")
 
+# Plot the histogram of gradient orientations
+ax[3].bar(orientations, selected_block_hist, width=0.2, color="blue", align="center")
+ax[3].set_xticks(orientations)
+ax[3].set_xticklabels([f"{np.degrees(o):.1f}°" for o in orientations])
+ax[3].set_title(f"HOG Histogram for Block ({block_x}, {block_y})")
+ax[3].set_xlabel("Gradient Orientation (°)")
+plt.xticks(rotation=45)
+ax[3].set_ylabel("Magnitude")
+
+plt.show()
+
+
+# Overlay gradient directions as arrows
+fig, ax = plt.subplots(figsize=(5, 5))
+ax.imshow(img_gray_test, cmap="gray")
+
+cell_size = 8  # Pixels per cell
+center_x = (block_y * cell_size) + cell_size // 2
+center_y = (block_x * cell_size) + cell_size // 2
+
+# Plot arrows for each orientation bin
+for mag, angle in zip(selected_block_hist, orientations):
+    dx = mag * np.cos(angle) * 4  # Scale factor for visibility
+    dy = mag * np.sin(angle) * 4
+    ax.arrow(center_x, center_y, dx, -dy, color='red', head_width=1, head_length=2)
+
+ax.set_title(f"HOG Arrows for Block ({block_x}, {block_y})")
+ax.axis("off")
 plt.show()
 
 
 
+"""
 
 #### HOG feature extraction for all cats and dogs ####
 
@@ -112,6 +153,7 @@ if X:
 print("All HOG features and labels saved in multiple files.")
 
 """
+"""
 
 # Convert to NumPy arrays
 X = np.array(X)
@@ -128,3 +170,5 @@ with open("hog_features.pkl", "wb") as f:
 print("HOG features and labels saved to hog_features.pkl")
 
 """
+
+
