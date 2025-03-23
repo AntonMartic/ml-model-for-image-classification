@@ -18,7 +18,7 @@ def classify_image():
     class_type = (request.form.get("type") or "SVM").strip().upper()  # SVM or RF
     try:
         # Extract HOG features
-        hog_features, img_resized = main.preprocess_single_image(file)
+        hog_viz_base64, img_resized, hog_features = main.preprocess_single_image(file)
         file.seek(0)  # Reset file pointer
 
         # Predict class
@@ -29,16 +29,12 @@ def classify_image():
 
         class_names = {0: "Cat", 1: "Dog"}
         result = class_names[prediction[0]]
-
+        
         # Generate occlusion sensitivity heatmap
         if class_type == "SVM":
-            heatmap_base64 = main.occlusion_sensitivity(file, main.svm_model, main.preprocess_single_image)
+            heatmap_base64 = main.occlusion_sensitivity(main.svm_model, hog_features, prediction[0], img_resized, class_type)
         else:
-            heatmap_base64 = main.occlusion_sensitivity(file, main.rf_model, main.preprocess_single_image)
-        file.seek(0)  # Reset file pointer again
-        
-        # Generate HOG feature visualization
-        hog_viz_base64 = main.visualize_hog_features(file)
+            heatmap_base64 = main.occlusion_sensitivity(main.rf_model, hog_features, prediction[0], img_resized, class_type)
 
         return jsonify({
             "result": result,
