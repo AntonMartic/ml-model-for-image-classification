@@ -5,15 +5,7 @@ import { db } from "./firebase";
 import DataDisplay from "./datadisplay";
 import { MainButton } from "./mainbutton";
 
-export function ClassificationResult({
-  appState,
-  results,
-  dbData,
-  setAppState,
-  setResults,
-  setFile,
-  setPreview,
-}: ClassificationProps) {
+export function ClassificationResult({ appState, results, dbData, setAppState, setResults, setFile, setPreview }: ClassificationProps) {
   const [hasAnswered, setHasAnswered] = useState(false);
 
   async function Reset() {
@@ -76,11 +68,7 @@ export function ClassificationResult({
   return (
     <>
       <div
-        className={`flex flex-col items-center gap-4 transition duration-300 ease-in-out ${
-          hasAnswered
-            ? "scale-0 pointer-events-none h-0 opacity-0"
-            : "scale-100 pointer-events-auto opacity-100"
-        }`}>
+        className={`flex flex-col items-center gap-4 transition duration-300 ease-in-out ${hasAnswered ? "scale-0 pointer-events-none h-0 opacity-0" : "scale-100 pointer-events-auto opacity-100"}`}>
         <p>Was this classification correct?</p>
         <div className="grid grid-cols-2 gap-4 ">
           <button
@@ -98,11 +86,7 @@ export function ClassificationResult({
         </div>
       </div>
       <div
-        className={`flex flex-col items-center gap-4 transition duration-300 ease-in-out ${
-          hasAnswered
-            ? "scale-100 pointer-events-auto opacity-100"
-            : "scale-0 pointer-events-none h-0 opacity-0"
-        }`}>
+        className={`flex flex-col items-center gap-4 transition duration-300 ease-in-out ${hasAnswered ? "scale-100 pointer-events-auto opacity-100" : "scale-0 pointer-events-none h-0 opacity-0"}`}>
         <DataDisplay data={dbData} />
         <MainButton text="Try another image" onClick={Reset} />
       </div>
