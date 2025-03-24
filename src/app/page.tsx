@@ -148,10 +148,7 @@ export default function page() {
           </div>
         </div>
       )}
-      <div
-        className={`flex flex-col ${
-          loading ? "h-screen w-screen overflow-hidden" : ""
-        }`}>
+      <div className="flex flex-col">
         <div>
           <p className=" text-1xl text-center font-bold text-neutral-950 bg-neutral-50">
             {appState.message}

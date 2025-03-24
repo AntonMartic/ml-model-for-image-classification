@@ -59,16 +59,16 @@ export function ClassificationResult({
 
     writeRes.classifications += 1;
 
-    const docRef = doc(db, "classifications", "information");
-    await updateDoc(docRef, {
-      cat: dbData?.cat + writeRes.cat,
-      dog: dbData?.dog + writeRes.dog,
-      classifications: dbData?.classifications + writeRes.classifications,
-      wrongClassifications:
-        dbData?.wrongClassifications + writeRes.wrongClassifications,
-      correctClassifications:
-        dbData?.correctClassifications + writeRes.correctClassifications,
-    });
+    // const docRef = doc(db, "classifications", "information");
+    // await updateDoc(docRef, {
+    //   cat: dbData?.cat + writeRes.cat,
+    //   dog: dbData?.dog + writeRes.dog,
+    //   classifications: dbData?.classifications + writeRes.classifications,
+    //   wrongClassifications:
+    //     dbData?.wrongClassifications + writeRes.wrongClassifications,
+    //   correctClassifications:
+    //     dbData?.correctClassifications + writeRes.correctClassifications,
+    // });
 
     setHasAnswered(true);
   }
