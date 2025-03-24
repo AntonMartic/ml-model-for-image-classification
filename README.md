@@ -20,6 +20,10 @@ You can try the live version of the app [here](https://tnm119-ml.up.railway.app/
 - Built with **Python (Flask)** and **Next.js** for backend and frontend
 - Provides instant results after image upload
 
+## Concept explanation
+
+- You can go through the Google presentation [here](https://docs.google.com/presentation/d/1eR0hhPlOI0-lmUgL10Bwnllc52NzgC9QJZtCSwUivec/edit?usp=sharing)
+
 ## Installation
 
 1. **Clone the repository**:
