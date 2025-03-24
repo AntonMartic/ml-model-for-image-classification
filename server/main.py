@@ -48,7 +48,7 @@ def occlusion_sensitivity(model, original_features, original_pred, img_resized, 
         Base64 encoded string of the heatmap image
     """
     patch_size = 16
-    stride = 16
+    stride = 8
     
     # Get the original confidence score
     # Different models have different methods for confidence scores
@@ -90,7 +90,6 @@ def occlusion_sensitivity(model, original_features, original_pred, img_resized, 
         diff = original_confidence - occluded_confidence
             
         return x, y, diff
-
 
     with ThreadPoolExecutor() as executor:
         results = list(executor.map(process_patch, coords))
