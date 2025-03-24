@@ -11,7 +11,8 @@ The frontend was not the focus of this project..... as you can see, soooooo sorr
 
 This project classifies images of cats and dogs using machine learning. It uses a trained model to predict whether an uploaded image contains a cat or a dog.
 
-You can try the live version of the app [here](https://tnm119-ml.up.railway.app/).
+You can try the live version of the app:
+[![Website Screenshot](readme-img/page.png)](https://tnm119-dog-cat-classifier.vercel.app/)
 
 ## Features
 
@@ -53,27 +54,21 @@ You can try the live version of the app [here](https://tnm119-ml.up.railway.app/
    ```
 
 5. **Install frontend dependencies**:
+
    ```bash
    npm install
    ```
 
-```bash
-conda install numpy -y
-conda install anaconda::matplotlib -y
-conda install anaconda::scikit-image -y
-conda install anaconda::scikit-learn -y
-```
-
-1. **Run the Flask backend**:
+6. **Run the Flask backend**:
 
    ```bash
    cd server
-   flask run
+   python server.py # Windows: py server.py
    ```
 
    The backend will be available at http://127.0.0.1:8080
 
-2. **Start the Next.js frontend**:
+7. **Start the Next.js frontend**:
 
    ```bash
    npm run dev
@@ -81,7 +76,7 @@ conda install anaconda::scikit-learn -y
 
    The frontend will be available at http://localhost:3000
 
-3. **Upload an image and classify it!**
+8. **Upload an image and classify it!**
 
 ## License
 
