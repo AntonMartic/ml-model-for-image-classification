@@ -49,8 +49,6 @@ def occlusion_sensitivity(model, original_features, original_pred, img_resized, 
     """
     patch_size = 16
     stride = 16
-    # Create a heatmap of the same size as the resized image
-    heatmap = np.zeros((128, 128))
     
     # Get the original confidence score
     # Different models have different methods for confidence scores
@@ -91,12 +89,19 @@ def occlusion_sensitivity(model, original_features, original_pred, img_resized, 
         # Calculate the difference in confidence
         diff = original_confidence - occluded_confidence
             
-         # Uppdatera heatmapen
-        heatmap[y:y+patch_size, x:x+patch_size] += diff
+        return x, y, diff
+
 
     with ThreadPoolExecutor() as executor:
-        executor.map(process_patch, coords)
+        results = list(executor.map(process_patch, coords))
+
+    heatmap = np.zeros((128, 128))
     
+    for x, y, diff in results:
+        heatmap[y:y+patch_size, x:x+patch_size] += diff
+    
+    heatmap = (heatmap - np.min(heatmap)) / (np.max(heatmap) - np.min(heatmap) + 1e-10)
+
     return create_overlay_image(img_resized, heatmap)
 
 def create_overlay_image(base_img, overlay):
