@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import main  # Importerar din klassificeringslogik
+import time
 
 app = Flask(__name__)
 CORS(app)
@@ -30,12 +31,16 @@ def classify_image():
         class_names = {0: "Cat", 1: "Dog"}
         result = class_names[prediction[0]]
         
+        start = time.perf_counter()
         # Generate occlusion sensitivity heatmap
         if class_type == "SVM":
             heatmap_base64 = main.occlusion_sensitivity(main.svm_model, hog_features, prediction[0], img_resized, class_type)
         else:
             heatmap_base64 = main.occlusion_sensitivity(main.rf_model, hog_features, prediction[0], img_resized, class_type)
+        end = time.perf_counter()
 
+        print("#-----------------------------------------------------------#")
+        print(f"Funktionen tog {end - start:.3f} sekunder att köra.")
         return jsonify({
             "result": result,
             "heatmap": heatmap_base64,
