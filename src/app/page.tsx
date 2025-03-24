@@ -23,6 +23,7 @@ export default function page() {
     hogVisualization: null,
     heatmap: null,
   });
+  const [loading, setLoading] = useState<boolean>(true);
 
   // useEffect(() => {
   //   const unsub = onSnapshot(doc(db, "classifications", "information"), (doc) => {
@@ -86,6 +87,8 @@ export default function page() {
         error: "Please select an image",
       });
 
+    setLoading(true);
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("type", (e.target as HTMLButtonElement).value);
@@ -103,17 +106,20 @@ export default function page() {
           heatmap: `data:image/png;base64,${data.heatmap}`,
           hogVisualization: `data:image/png;base64,${data.hog_visualization}`,
         });
+        setLoading(false);
       } else {
         setAppState({
           ...appState,
           error: data.error || "An error occurred",
         });
+        setLoading(false);
       }
     } catch {
       setAppState({
         ...appState,
         error: "Error when uploading file",
       });
+      setLoading(false);
     }
   };
 
@@ -134,6 +140,12 @@ export default function page() {
 
   return (
     <>
+      <div className="fixed bg-black flex items-center justify-center">
+        <div className="p-5 rounded-lg bg-white flex flex-col items-center w-screen h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+          <p className="mt-3 font-semibold">Processing...</p>
+        </div>
+      </div>
       <div>
         <div>
           <p className=" text-1xl text-center font-bold text-neutral-950 bg-neutral-50">
@@ -212,7 +224,7 @@ export default function page() {
                   : "opacity-100 scale-100 pointer-events-auto h-fit"
               }`}>
               <label
-                className={`flex flex-col items-center justify-center lg:w-3xl w-[80vw] gap-2 font-medium text-center transition duration-300 ease-in-out h-60 rounded-3xl px-10 
+                className={`flex flex-col items-center justify-center lg:w-3xl w-[80vw] gap-2 font-medium text-center transition duration-300 ease-in-out h-60 rounded-3xl 
                     ${
                       preview
                         ? "text-neutral-100 text-[0rem]"
