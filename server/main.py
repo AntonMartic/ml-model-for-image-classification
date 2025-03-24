@@ -116,37 +116,3 @@ def create_overlay_image(base_img, overlay):
     buf.seek(0)
     plt.close()
     return base64.b64encode(buf.getvalue()).decode('utf-8')
-
-    # for y in range(0, 128 - patch_size + 1, stride):
-    #     for x in range(0, 128 - patch_size + 1, stride):
-    #         # Create a copy of the original image
-    #         occluded_img = img_resized.copy()
-            
-    #         # Apply occlusion (gray patch)
-    #         occluded_img[y:y+patch_size, x:x+patch_size] = 0.5
-            
-    #         # Convert to grayscale and extract HOG features
-    #         occluded_gray = rgb2gray(occluded_img)
-    #         occluded_features = hog(occluded_gray, pixels_per_cell=(8, 8), cells_per_block=(2, 2), orientations=9)
-
-    #                     # Beräkna confidence för den occluderade bilden
-    #         if class_type == "SVM":
-    #             occluded_confidence = model.decision_function(occluded_features.reshape(1, -1))[0]
-    #             # Handle multi-class case
-    #             if isinstance(occluded_confidence, np.ndarray) and len(occluded_confidence) > 1:
-    #                 if original_pred == 1:  # If predicted class is positive (Dog)
-    #                     occluded_confidence = occluded_confidence[1]
-    #                 else:
-    #                     occluded_confidence = -occluded_confidence[0]
-    #         else:
-    #             occluded_proba = model.predict_proba(occluded_features.reshape(1, -1))[0]
-    #             occluded_confidence = occluded_proba[original_pred]
-            
-    #         # Calculate the difference in confidence
-    #         diff = original_confidence - occluded_confidence
-            
-    #         # Uppdatera heatmapen
-    #         heatmap[y:y+patch_size, x:x+patch_size] += diff
-
-    # # Normalize the heatmap
-    # heatmap = (heatmap - np.min(heatmap)) / (np.max(heatmap) - np.min(heatmap) + 1e-10)
