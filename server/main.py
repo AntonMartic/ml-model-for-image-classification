@@ -11,26 +11,46 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
 from concurrent.futures import ThreadPoolExecutor
+import gc
+import logging
 
-# Load the trained SVM model
-with open("svm_model.pkl", "rb") as model_file_svm:
-    svm_model = pickle.load(model_file_svm) 
-print("SVM model loaded successfully!")
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-with open("rf_model.pkl", "rb") as model_file_rf:
-    rf_model = pickle.load(model_file_rf)
-print("RF model loaded successfully!")
+# Load the trained SVM model with memory optimization
+def load_model(filepath):
+    try:
+        with open(filepath, "rb") as model_file:
+            model = pickle.load(model_file)
+        logger.info(f"Model loaded successfully from {filepath}")
+        return model
+    except Exception as e:
+        logger.error(f"Error loading model from {filepath}: {e}")
+        return None
+
+svm_model = load_model("svm_model.pkl")
+rf_model = load_model("rf_model.pkl")
 
 # Function to preprocess and extract HOG features from a single image
 def preprocess_single_image(image):
-    img = imageio.imread(image) if isinstance(image, str) else imageio.imread(image)  # Load image
-    img_resized = resize(img, (128, 128), anti_aliasing=True)  # Resize to 128x128
-    img_gray = rgb2gray(img_resized)  # Convert to grayscale
+    try:
+        img = imageio.imread(image)
+        img_resized = resize(img, (128, 128), anti_aliasing=True)
+        img_gray = rgb2gray(img_resized)
 
-    features, hog_image = hog(img_gray, pixels_per_cell=(8, 8), cells_per_block=(2, 2), orientations=9, visualize=True, block_norm='L2-Hys')
-    hog_image_rescaled = exposure.rescale_intensity(hog_image, in_range=(0, 10))
+        features, hog_image = hog(img_gray, pixels_per_cell=(8, 8), cells_per_block=(2, 2), orientations=9, visualize=True, block_norm='L2-Hys')
+        hog_image_rescaled = exposure.rescale_intensity(hog_image, in_range=(0, 10))
 
-    return create_overlay_image(img_resized, hog_image_rescaled), img_resized, features.reshape(1,-1)
+        overlay = create_overlay_image(img_resized, hog_image_rescaled)
+
+        del img_gray, hog_image, img
+
+        return overlay, img_resized, features.reshape(1, -1)
+        
+    except Exception as e:
+        logger.error(f"Error in image preprocessing: {e}")
+        raise
 
 def occlusion_sensitivity(model, original_features, original_pred, img_resized, class_type):
     """
@@ -47,74 +67,97 @@ def occlusion_sensitivity(model, original_features, original_pred, img_resized, 
     Returns:
         Base64 encoded string of the heatmap image
     """
-    patch_size = 16
-    stride = 8
+    try:
+        patch_size = 16
+        stride = 8
     
-    # Get the original confidence score
-    # Different models have different methods for confidence scores
-    if class_type == "SVM":
-        # SVM has decision_function
-        original_confidence = model.decision_function(original_features)[0]
-    else:
-        # Random Forest has predict_proba
-        original_proba = model.predict_proba(original_features)[0]
-        # Use probability of predicted class as confidence
-        original_confidence = original_proba[original_pred]
+        # Get the original confidence score
+        # Different models have different methods for confidence scores
+        if class_type == "SVM":
+            # SVM has decision_function
+            original_confidence = model.decision_function(original_features)[0]
+        else:
+            # Random Forest has predict_proba
+            original_proba = model.predict_proba(original_features)[0]
+            # Use probability of predicted class as confidence
+            original_confidence = original_proba[original_pred]
 
-    coords = [(x, y) 
+        coords = [(x, y) 
               for y in range(0, 128 - patch_size + 1, stride)
               for x in range(0, 128 - patch_size + 1, stride)]
     
-    def process_patch(coords):
-        x, y = coords
+        def process_patch(coords):
+            x, y = coords
         
-        occluded_img = img_resized.copy()
-        occluded_img[y:y+patch_size, x:x+patch_size] = 0.5
+            occluded_img = img_resized.copy()
+            occluded_img[y:y+patch_size, x:x+patch_size] = 0.5
         
-        occluded_gray = rgb2gray(occluded_img)
-        occluded_features = hog(occluded_gray, pixels_per_cell=(8, 8), cells_per_block=(2, 2), orientations=9)
+            occluded_gray = rgb2gray(occluded_img)
+            occluded_features = hog(occluded_gray, pixels_per_cell=(8, 8), cells_per_block=(2, 2), orientations=9)
         
-        if class_type == "SVM":
-            occluded_confidence = model.decision_function(occluded_features.reshape(1, -1))[0]
-            # Handle multi-class case
-            if isinstance(occluded_confidence, np.ndarray) and len(occluded_confidence) > 1:
-                if original_pred == 1:  # If predicted class is positive (Dog)
-                    occluded_confidence = occluded_confidence[1]
-                else:
-                    occluded_confidence = -occluded_confidence[0]
-        else:
-            occluded_proba = model.predict_proba(occluded_features.reshape(1, -1))[0]
-            occluded_confidence = occluded_proba[original_pred]
+            if class_type == "SVM":
+                occluded_confidence = model.decision_function(occluded_features.reshape(1, -1))[0]
+                # Handle multi-class case
+                if isinstance(occluded_confidence, np.ndarray) and len(occluded_confidence) > 1:
+                    if original_pred == 1:  # If predicted class is positive (Dog)
+                        occluded_confidence = occluded_confidence[1]
+                    else:
+                        occluded_confidence = -occluded_confidence[0]
+            else:
+                occluded_proba = model.predict_proba(occluded_features.reshape(1, -1))[0]
+                occluded_confidence = occluded_proba[original_pred]
 
-        # Calculate the difference in confidence
-        diff = original_confidence - occluded_confidence
+            # Cleanup memory
+            del occluded_img, occluded_gray, occluded_features
             
-        return x, y, diff
+            return x, y, original_confidence - occluded_confidence
 
-    with ThreadPoolExecutor() as executor:
-        results = list(executor.map(process_patch, coords))
+        with ThreadPoolExecutor() as executor:
+            results = list(executor.map(process_patch, coords))
 
-    heatmap = np.zeros((128, 128))
+        heatmap = np.zeros((128, 128))
+        for x, y, diff in results:
+            heatmap[y:y+patch_size, x:x+patch_size] += diff
     
-    for x, y, diff in results:
-        heatmap[y:y+patch_size, x:x+patch_size] += diff
-    
-    heatmap = (heatmap - np.min(heatmap)) / (np.max(heatmap) - np.min(heatmap) + 1e-10)
+        heatmap = (heatmap - np.min(heatmap)) / (np.max(heatmap) - np.min(heatmap) + 1e-10)
 
-    return create_overlay_image(img_resized, heatmap)
+        heatmap_overlay = create_overlay_image(img_resized, heatmap)
+
+        del coords, results, heatmap, patch_size, stride, original_confidence
+        gc.collect()
+
+        return heatmap_overlay
+    
+    except Exception as e:
+        logger.error(f"Error in occlusion sensitivity: {e}")
+        raise
 
 def create_overlay_image(base_img, overlay):
-    plt.figure(figsize=(5, 5))
-    plt.imshow(base_img)
-    plt.imshow(overlay, cmap='jet', alpha=0.5)
-    plt.axis('off')
+    try:
+        plt.figure(figsize=(5, 5))
+        plt.imshow(base_img)
+        plt.imshow(overlay, cmap='jet', alpha=0.5)
+        plt.axis('off')
     
-    # Save the figure to a buffer
-    buf = BytesIO()
-    plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0)
-    buf.seek(0)
-    plt.close()
-    return base64.b64encode(buf.getvalue()).decode('utf-8')
+        # Save to buffer
+        buf = BytesIO()
+        plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0)
+        buf.seek(0)
+
+        # Encode and cleanup
+        encoded = base64.b64encode(buf.getvalue()).decode('utf-8')
+
+        # Close plot to free memory
+        plt.close()
+
+        # Cleanup memory
+        del buf, overlay
+        gc.collect()
+        return encoded
+    
+    except Exception as e:
+        logger.error(f"Error creating overlay image: {e}")
+        raise
 
 def occlusion_sensitivity_old(model, original_features, original_pred, img_resized, class_type):
     patch_size = 16
