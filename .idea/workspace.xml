@@ -5,7 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c0ffc40f-d24f-4ffc-813f-97cb19b10554" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/server/PythonProject1/hog-feature-extraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/PythonProject1/hog-feature-extraction.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/PythonProject1/RF-smaller-samples.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/PythonProject1/RF-smaller-samples.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/PythonProject1/SVM-smaller-samples.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/PythonProject1/SVM-smaller-samples.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,6 +35,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python.RF-smaller-samples.executor": "Run",
     "Python.SVM-smaller-samples.executor": "Run",
     "Python.hog-feature-extraction.executor": "Run",
     "Python.main.executor": "Run",

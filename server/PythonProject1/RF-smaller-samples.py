@@ -35,8 +35,11 @@ y_pred = rf_model.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 print(f"Test Accuracy: {accuracy:.4f}")
 
+"""
 # Save trained RF model to a file
 with open("rf_model.pkl", "wb") as model_file:
     pickle.dump(rf_model, model_file)
 
 print("RF model saved as rf_model.pkl")
+
+"""
