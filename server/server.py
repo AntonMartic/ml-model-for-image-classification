@@ -67,7 +67,6 @@ def classify_image():
         })
 
         del result, heatmap_base64, hog_viz_base64, hog_features, img_resized
-        gc.collect()
         
         logger.info(f"Current memory usage: {current / 10**6:.2f} MB")
         tracemalloc.stop()

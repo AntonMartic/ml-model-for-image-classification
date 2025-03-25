@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
 from concurrent.futures import ThreadPoolExecutor
-import gc
 import logging
 
 # Configure logging
@@ -53,20 +52,6 @@ def preprocess_single_image(image):
         raise
 
 def occlusion_sensitivity(model, original_features, original_pred, img_resized, class_type):
-    """
-    Generate an occlusion sensitivity heatmap for Random Forest or SVM models.
-    Shows which parts of the image are most important for classification.
-    
-    Args:
-        model: Trained classifier model (RF or SVM)
-        original_features: Pre-extracted HOG features
-        original_pred: Numeric prediction (0 for Cat, 1 for Dog)
-        img_resized: Pre-resized image
-        class_type: Type of classifier ("SVM" or "RF")
-        
-    Returns:
-        Base64 encoded string of the heatmap image
-    """
     try:
         patch_size = 16
         stride = 8
@@ -124,8 +109,6 @@ def occlusion_sensitivity(model, original_features, original_pred, img_resized, 
         heatmap_overlay = create_overlay_image(img_resized, heatmap)
 
         del coords, results, heatmap, patch_size, stride, original_confidence
-        gc.collect()
-
         return heatmap_overlay
     
     except Exception as e:
@@ -147,12 +130,10 @@ def create_overlay_image(base_img, overlay):
         # Encode and cleanup
         encoded = base64.b64encode(buf.getvalue()).decode('utf-8')
 
-        # Close plot to free memory
         plt.close()
 
         # Cleanup memory
         del buf, overlay
-        gc.collect()
         return encoded
     
     except Exception as e:
